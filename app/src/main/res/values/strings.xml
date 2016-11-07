@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">TodoList</string>
+
+    <string-array name="choices">
+        <item>Coke</item>
+        <item>Pepsi</item>
+        <item>Sprite</item>
+        <item>Seven Up</item>
+    </string-array>
 </resources>

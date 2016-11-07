@@ -4,7 +4,6 @@ import com.cs321.todolist.db.TaskContract;
 import com.cs321.todolist.db.TaskDbHelper;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
@@ -45,10 +44,16 @@ public class MainActivity extends AppCompatActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
     		switch (item.getItemId()) {
         		case R.id.action_add_task:
-				final EditText taskEditText = new EditText(this);
-				AlertDialog dialog = new AlertDialog.Builder(this).setTitle("Add a new task")
-					.setMessage("What do you want to do next?").setView(taskEditText)
-				    .setPositiveButton("Add", new DialogInterface.OnClickListener(){
+					final EditText taskEditText = new EditText(this);
+					final CharSequence[] items = {" High "," Medium "," Low "};
+					final ArrayList seletedItems=new ArrayList();
+
+
+					AlertDialog dialog = new AlertDialog.Builder(this).setTitle("Add a new task")
+					.setView(taskEditText)
+					//Let user choose priority for this task
+					.setSingleChoiceItems(items, 0, null)
+					.setPositiveButton("Add", new DialogInterface.OnClickListener(){
 				    	@Override
 					 	public void onClick(DialogInterface dialog, int which) {
 							String task = String.valueOf(taskEditText.getText());
