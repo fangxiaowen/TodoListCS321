@@ -4,10 +4,8 @@ import com.cs321.todolist.db.TaskContract;
 import com.cs321.todolist.db.TaskDbHelper;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.widget.ArrayAdapter;
-import android.widget.EditText;
+import android.view.*;
+import android.widget.*;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.database.sqlite.SQLiteDatabase;
@@ -15,14 +13,16 @@ import android.content.ContentValues;
 import android.widget.ListView;
 import java.util.ArrayList;
 import android.database.Cursor;
-import android.view.View;
-import android.widget.TextView;
+import android.widget.AdapterView.OnItemClickListener;
+
 
 public class MainActivity extends AppCompatActivity {
 	 private static final String TAG = "MainActivity";
 	 private TaskDbHelper mHelper;
 	 private ListView mTaskListView;
 	 private ArrayAdapter<String> mAdapter;
+
+
 
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +32,39 @@ public class MainActivity extends AppCompatActivity {
 		mTaskListView = (ListView) findViewById(R.id.list_todo);
 
 		updateUI();
+	}
+
+	//edit created items. Has bugs in database stuff
+	public void editTask(View view){
+		View parent = (View) view.getParent();
+		TextView taskTextView = (TextView) parent.findViewById(R.id.task_title);
+		final String task = String.valueOf(taskTextView.getText());
+
+		final EditText taskEditText = new EditText(this);
+		taskEditText.setText(task, TextView.BufferType.EDITABLE);
+		final CharSequence[] items = {" High "," Medium "," Low "};
+
+		AlertDialog dialog = new AlertDialog.Builder(this).setTitle("Edit task")
+				.setView(taskEditText)
+				//Let user choose priority for this task
+				.setSingleChoiceItems(items, 0, null)
+				.setPositiveButton("Add", new DialogInterface.OnClickListener(){
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						String editedTask = String.valueOf(taskEditText.getText());
+						SQLiteDatabase db = mHelper.getWritableDatabase();
+						ContentValues values = new ContentValues();
+						values.put(TaskContract.TaskEntry.COL_TASK_TITLE, editedTask);
+						db.update(TaskContract.TaskEntry.TABLE, values, TaskContract.TaskEntry.COL_TASK_TITLE + "=" + task, null);
+
+						db.close();
+						updateUI();
+					}
+				})
+				.setNegativeButton("Cancel", null)
+				.create();
+
+		dialog.show();
 	}
 
 	@Override
@@ -90,6 +123,7 @@ public class MainActivity extends AppCompatActivity {
 		db.close();
 		updateUI();
 	}
+
 	private void updateUI() {
 		ArrayList<String> taskList = new ArrayList<>();
 		SQLiteDatabase db = mHelper.getReadableDatabase();
