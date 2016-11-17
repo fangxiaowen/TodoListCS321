@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
 						SQLiteDatabase db = mHelper.getWritableDatabase();
 						ContentValues values = new ContentValues();
 						values.put(TaskContract.TaskEntry.COL_TASK_TITLE, editedTask);
-						db.update(TaskContract.TaskEntry.TABLE, values, TaskContract.TaskEntry.COL_TASK_TITLE + "=" + task, null);
+						db.update(TaskContract.TaskEntry.TABLE, values, TaskContract.TaskEntry.COL_TASK_TITLE + "='" + task + "'", null);
 
 						db.close();
 						updateUI();
@@ -151,5 +151,4 @@ public class MainActivity extends AppCompatActivity {
 		db.close();
 	}
 
-		
 }
