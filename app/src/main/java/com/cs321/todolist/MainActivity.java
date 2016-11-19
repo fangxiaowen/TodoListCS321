@@ -22,8 +22,6 @@ public class MainActivity extends AppCompatActivity {
 	 private ListView mTaskListView;
 	 private ArrayAdapter<String> mAdapter;
 
-
-
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -35,11 +33,11 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	//edit created items. Has bugs in database stuff
+	//need to add method for updating priority
 	public void editTask(View view){
 		View parent = (View) view.getParent();
 		TextView taskTextView = (TextView) parent.findViewById(R.id.task_title);
 		final String task = String.valueOf(taskTextView.getText());
-
 		final EditText taskEditText = new EditText(this);
 		taskEditText.setText(task, TextView.BufferType.EDITABLE);
 		final CharSequence[] items = {" High "," Medium "," Low "};
@@ -56,14 +54,12 @@ public class MainActivity extends AppCompatActivity {
 						ContentValues values = new ContentValues();
 						values.put(TaskContract.TaskEntry.COL_TASK_TITLE, editedTask);
 						db.update(TaskContract.TaskEntry.TABLE, values, TaskContract.TaskEntry.COL_TASK_TITLE + "='" + task + "'", null);
-
 						db.close();
 						updateUI();
 					}
 				})
 				.setNegativeButton("Cancel", null)
 				.create();
-
 		dialog.show();
 	}
 
@@ -79,8 +75,7 @@ public class MainActivity extends AppCompatActivity {
         		case R.id.action_add_task:
 					final EditText taskEditText = new EditText(this);
 					final CharSequence[] items = {" High "," Medium "," Low "};
-					final ArrayList seletedItems=new ArrayList();
-
+					//final ArrayList seletedItems=new ArrayList();
 
 					AlertDialog dialog = new AlertDialog.Builder(this).setTitle("Add a new task")
 					.setView(taskEditText)
@@ -90,14 +85,17 @@ public class MainActivity extends AppCompatActivity {
 				    	@Override
 					 	public void onClick(DialogInterface dialog, int which) {
 							String task = String.valueOf(taskEditText.getText());
+							ListView lw = ((AlertDialog)dialog).getListView();
+							String checkedPriority = lw.getAdapter().getItem(lw.getCheckedItemPosition()).toString();
 					   		SQLiteDatabase db = mHelper.getWritableDatabase();
 					   		ContentValues values = new ContentValues();
-					   		values.put(TaskContract.TaskEntry.COL_TASK_TITLE, task);
+							values.put(TaskContract.TaskEntry.COL_TASK_TITLE, task);
+							values.put(TaskContract.TaskEntry.COL_TASK_PRIORITY, checkedPriority);
 					   		db.insertWithOnConflict(TaskContract.TaskEntry.TABLE,
 						   	null,
 						   	values,
 						   	SQLiteDatabase.CONFLICT_REPLACE);
-						   	db.close();
+							db.close();
 							updateUI();
 						}
 				    })
@@ -128,13 +126,15 @@ public class MainActivity extends AppCompatActivity {
 		ArrayList<String> taskList = new ArrayList<>();
 		SQLiteDatabase db = mHelper.getReadableDatabase();
 		Cursor cursor = db.query(TaskContract.TaskEntry.TABLE,
-				new String[]{TaskContract.TaskEntry._ID, TaskContract.TaskEntry.COL_TASK_TITLE},
+				new String[]{TaskContract.TaskEntry._ID, TaskContract.TaskEntry.COL_TASK_TITLE, TaskContract.TaskEntry.COL_TASK_PRIORITY},
 				null, null, null, null, null);
-		while(cursor.moveToNext()) {
-			int idx = cursor.getColumnIndex(TaskContract.TaskEntry.COL_TASK_TITLE);
-			taskList.add(cursor.getString(idx));
-		}
 
+		while(cursor.moveToNext()) {
+			int idx1 = cursor.getColumnIndex(TaskContract.TaskEntry.COL_TASK_TITLE);
+			//int idx2 = cursor.getColumnIndex(TaskContract.TaskEntry.COL_TASK_PRIORITY);
+			taskList.add(cursor.getString(idx1));
+			//taskList.add(cursor.getString(idx2));
+		}
 		if (mAdapter == null) {
 			mAdapter = new ArrayAdapter<>(this,
 					R.layout.item_todo,
@@ -149,6 +149,8 @@ public class MainActivity extends AppCompatActivity {
 
 		cursor.close();
 		db.close();
+
+
 	}
 
 }
