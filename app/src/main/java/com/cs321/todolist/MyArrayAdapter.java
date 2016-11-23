@@ -24,15 +24,12 @@ public class MyArrayAdapter extends ArrayAdapter<String> {
         Log.v("Content", ((TextView)v.findViewById(R.id.task_title)).getText().toString());
         Log.v("priority is", MainActivity.priority.get(position));
 
-        if (MainActivity.priority.get(position).length() == 5){
-            Log.v("What you are? ", "Hahhaaaaaaaaaha");
+        if (MainActivity.priority.get(position).equals(" Low ")){
             v.setBackgroundColor(Color.GREEN);}
-        if (MainActivity.priority.get(position).length() == 6){
-            Log.v("What you are? ", "Ha");
+        if (MainActivity.priority.get(position).equals(" High ")){
             v.setBackgroundColor(Color.RED);}
-        if (MainActivity.priority.get(position).length() == 8){
-            Log.v("What you are? ", "Haha");
-            v.setBackgroundColor(Color.BLUE);}
+        if (MainActivity.priority.get(position).equals(" Medium ")){
+            v.setBackgroundColor(Color.YELLOW);}
         return v;
     }
 }
