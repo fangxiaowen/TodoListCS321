@@ -2,6 +2,7 @@ package com.cs321.todolist;
 
 import com.cs321.todolist.db.TaskContract;
 import com.cs321.todolist.db.TaskDbHelper;
+import com.cs321.todolist.MyArrayAdapter;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.*;
@@ -10,7 +11,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.database.sqlite.SQLiteDatabase;
 import android.content.ContentValues;
-import android.widget.ListView;
+//import android.widget.ListView;
 import java.util.ArrayList;
 import android.database.Cursor;
 import android.widget.AdapterView.OnItemClickListener;
@@ -20,7 +21,8 @@ public class MainActivity extends AppCompatActivity {
 	 private static final String TAG = "MainActivity";
 	 private TaskDbHelper mHelper;
 	 private ListView mTaskListView;
-	 private ArrayAdapter<String> mAdapter;
+	 private MyArrayAdapter mAdapter;
+	 public static ArrayList<String> priority;
 
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,9 +52,13 @@ public class MainActivity extends AppCompatActivity {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 						String editedTask = String.valueOf(taskEditText.getText());
+						ListView lw = ((AlertDialog)dialog).getListView();
+						String checkedPriority = lw.getAdapter().getItem(lw.getCheckedItemPosition()).toString();
 						SQLiteDatabase db = mHelper.getWritableDatabase();
 						ContentValues values = new ContentValues();
 						values.put(TaskContract.TaskEntry.COL_TASK_TITLE, editedTask);
+						values.put(TaskContract.TaskEntry.COL_TASK_PRIORITY, checkedPriority);
+
 						db.update(TaskContract.TaskEntry.TABLE, values, TaskContract.TaskEntry.COL_TASK_TITLE + "='" + task + "'", null);
 						db.close();
 						updateUI();
@@ -122,8 +128,9 @@ public class MainActivity extends AppCompatActivity {
 		updateUI();
 	}
 
-	private void updateUI() {
+	public void updateUI() {
 		ArrayList<String> taskList = new ArrayList<>();
+		ArrayList<String> priorityList = new ArrayList<>();
 		SQLiteDatabase db = mHelper.getReadableDatabase();
 		Cursor cursor = db.query(TaskContract.TaskEntry.TABLE,
 				new String[]{TaskContract.TaskEntry._ID, TaskContract.TaskEntry.COL_TASK_TITLE, TaskContract.TaskEntry.COL_TASK_PRIORITY},
@@ -131,12 +138,13 @@ public class MainActivity extends AppCompatActivity {
 
 		while(cursor.moveToNext()) {
 			int idx1 = cursor.getColumnIndex(TaskContract.TaskEntry.COL_TASK_TITLE);
-			//int idx2 = cursor.getColumnIndex(TaskContract.TaskEntry.COL_TASK_PRIORITY);
+			int idx2 = cursor.getColumnIndex(TaskContract.TaskEntry.COL_TASK_PRIORITY);
 			taskList.add(cursor.getString(idx1));
-			//taskList.add(cursor.getString(idx2));
+			priorityList.add(cursor.getString(idx2));
 		}
+		priority = priorityList;
 		if (mAdapter == null) {
-			mAdapter = new ArrayAdapter<>(this,
+			mAdapter = new MyArrayAdapter(this,
 					R.layout.item_todo,
 					R.id.task_title,
 					taskList);
