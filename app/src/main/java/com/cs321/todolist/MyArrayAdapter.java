@@ -20,15 +20,17 @@ public class MyArrayAdapter extends ArrayAdapter<String> {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+        //get the current view
         RelativeLayout v = (RelativeLayout)super.getView(position, convertView, parent);
-        Log.v("Content", ((TextView)v.findViewById(R.id.task_title)).getText().toString());
-        Log.v("priority is", MainActivity.priority.get(position));
-
-        if (MainActivity.priority.get(position).equals(" Low ")){
+        //Log.v("Content", ((TextView)v.findViewById(R.id.task_title)).getText().toString());
+        //Log.v("priority is", MainActivity.priority.get(position).toString());
+        
+        //set background for this view according to priority
+        if (MainActivity.priority.get(position) == 1){
             v.setBackgroundColor(Color.GREEN);}
-        if (MainActivity.priority.get(position).equals(" High ")){
+        if (MainActivity.priority.get(position) == 3){
             v.setBackgroundColor(Color.RED);}
-        if (MainActivity.priority.get(position).equals(" Medium ")){
+        if (MainActivity.priority.get(position) == 2){
             v.setBackgroundColor(Color.YELLOW);}
         return v;
     }

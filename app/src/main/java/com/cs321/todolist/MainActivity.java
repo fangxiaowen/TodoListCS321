@@ -2,19 +2,17 @@ package com.cs321.todolist;
 
 import com.cs321.todolist.db.TaskContract;
 import com.cs321.todolist.db.TaskDbHelper;
-import com.cs321.todolist.MyArrayAdapter;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.*;
 import android.widget.*;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.database.sqlite.SQLiteDatabase;
 import android.content.ContentValues;
-//import android.widget.ListView;
 import java.util.ArrayList;
 import android.database.Cursor;
-import android.widget.AdapterView.OnItemClickListener;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -22,7 +20,7 @@ public class MainActivity extends AppCompatActivity {
 	 private TaskDbHelper mHelper;
 	 private ListView mTaskListView;
 	 private MyArrayAdapter mAdapter;
-	 public static ArrayList<String> priority;
+	 public static ArrayList<Integer> priority;
 
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
 		taskEditText.setText(task, TextView.BufferType.EDITABLE);
 		final CharSequence[] items = {" High "," Medium "," Low "};
 
+		//create a alert dialog for user to change info of this clicked task
 		AlertDialog dialog = new AlertDialog.Builder(this).setTitle("Edit task")
 				.setView(taskEditText)
 				//Let user choose priority for this task
@@ -54,13 +53,23 @@ public class MainActivity extends AppCompatActivity {
 						String editedTask = String.valueOf(taskEditText.getText());
 						ListView lw = ((AlertDialog)dialog).getListView();
 						String checkedPriority = lw.getAdapter().getItem(lw.getCheckedItemPosition()).toString();
+						int priorityNum;
+						//3 for High, 2 for Medium, 1 for Low
+						if (checkedPriority.equals(" High "))
+							priorityNum = 3;
+						else if (checkedPriority.equals(" Medium "))
+							priorityNum = 2;
+						else
+							priorityNum = 1;
+						//get a database to update new data of this task
 						SQLiteDatabase db = mHelper.getWritableDatabase();
 						ContentValues values = new ContentValues();
 						values.put(TaskContract.TaskEntry.COL_TASK_TITLE, editedTask);
-						values.put(TaskContract.TaskEntry.COL_TASK_PRIORITY, checkedPriority);
-
+						values.put(TaskContract.TaskEntry.COL_TASK_PRIORITY, priorityNum);
+						//this is the update method. We can use a better way to do this. Will do it later.
 						db.update(TaskContract.TaskEntry.TABLE, values, TaskContract.TaskEntry.COL_TASK_TITLE + "='" + task + "'", null);
 						db.close();
+
 						updateUI();
 					}
 				})
@@ -76,12 +85,12 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	@Override
+	//create a new task when "+" button is clicked. Pretty the same as method editTask().
 	public boolean onOptionsItemSelected(MenuItem item) {
     		switch (item.getItemId()) {
         		case R.id.action_add_task:
 					final EditText taskEditText = new EditText(this);
 					final CharSequence[] items = {" High "," Medium "," Low "};
-					//final ArrayList seletedItems=new ArrayList();
 
 					AlertDialog dialog = new AlertDialog.Builder(this).setTitle("Add a new task")
 					.setView(taskEditText)
@@ -93,10 +102,18 @@ public class MainActivity extends AppCompatActivity {
 							String task = String.valueOf(taskEditText.getText());
 							ListView lw = ((AlertDialog)dialog).getListView();
 							String checkedPriority = lw.getAdapter().getItem(lw.getCheckedItemPosition()).toString();
+							int priorityNum;
+							Log.v("Pri ", checkedPriority);
+							if (checkedPriority.equals(" High "))
+								priorityNum = 3;
+							else if (checkedPriority.equals(" Medium "))
+								priorityNum = 2;
+							else
+								priorityNum = 1;
 					   		SQLiteDatabase db = mHelper.getWritableDatabase();
 					   		ContentValues values = new ContentValues();
 							values.put(TaskContract.TaskEntry.COL_TASK_TITLE, task);
-							values.put(TaskContract.TaskEntry.COL_TASK_PRIORITY, checkedPriority);
+							values.put(TaskContract.TaskEntry.COL_TASK_PRIORITY, priorityNum);
 					   		db.insertWithOnConflict(TaskContract.TaskEntry.TABLE,
 						   	null,
 						   	values,
@@ -130,19 +147,22 @@ public class MainActivity extends AppCompatActivity {
 
 	public void updateUI() {
 		ArrayList<String> taskList = new ArrayList<>();
-		ArrayList<String> priorityList = new ArrayList<>();
+		ArrayList<Integer> priorityList = new ArrayList<>();
 		SQLiteDatabase db = mHelper.getReadableDatabase();
+		//Get a query which sorts the database by task priority in descending order
 		Cursor cursor = db.query(TaskContract.TaskEntry.TABLE,
 				new String[]{TaskContract.TaskEntry._ID, TaskContract.TaskEntry.COL_TASK_TITLE, TaskContract.TaskEntry.COL_TASK_PRIORITY},
-				null, null, null, null, null);
-
+				null, null, null, null, TaskContract.TaskEntry.COL_TASK_PRIORITY + " DESC");
+		//get the task title and task priority and store them in taskList and priorityList
 		while(cursor.moveToNext()) {
 			int idx1 = cursor.getColumnIndex(TaskContract.TaskEntry.COL_TASK_TITLE);
 			int idx2 = cursor.getColumnIndex(TaskContract.TaskEntry.COL_TASK_PRIORITY);
 			taskList.add(cursor.getString(idx1));
-			priorityList.add(cursor.getString(idx2));
+			priorityList.add(cursor.getInt(idx2));
 		}
 		priority = priorityList;
+		Log.v("Priority ", priorityList.toString());
+		//Use adapter to create the whole view for our app
 		if (mAdapter == null) {
 			mAdapter = new MyArrayAdapter(this,
 					R.layout.item_todo,
