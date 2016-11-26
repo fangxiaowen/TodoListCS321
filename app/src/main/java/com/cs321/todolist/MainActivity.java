@@ -148,6 +148,20 @@ public class MainActivity extends AppCompatActivity {
 		updateUI();
 	}
 
+	public void finishTask(View view){
+		View parent = (View) view.getParent().getParent();
+		TextView taskTextView = (TextView) parent.findViewById(R.id.task_title);
+		String task = String.valueOf(taskTextView.getText());
+		SQLiteDatabase db = mHelper.getWritableDatabase();
+		ContentValues values = new ContentValues();
+		values.put(TaskContract.TaskEntry.COL_TASK_TITLE, task);
+		values.put(TaskContract.TaskEntry.COL_TASK_PRIORITY, -1);
+		db.update(TaskContract.TaskEntry.TABLE, values, TaskContract.TaskEntry.COL_TASK_TITLE + "='" + task + "'", null);
+		db.close();
+
+		updateUI();
+	}
+
 	public void updateUI() {
 		ArrayList<String> taskList = new ArrayList<>();
 		ArrayList<Integer> priorityList = new ArrayList<>();

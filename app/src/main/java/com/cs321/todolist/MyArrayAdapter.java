@@ -36,14 +36,22 @@ public class MyArrayAdapter extends ArraySwipeAdapter<String> {
 
         //set background for this view according to priority
         TextView taskTitle = (TextView) v.findViewById(R.id.task_title);
+
         if (MainActivity.priority.get(position) == 1){
             taskTitle.setTextColor(Color.BLUE);
+            View taskParent = (View) taskTitle.getParent();
+            //taskParent.setBackgroundColor();
+        }
+         if (MainActivity.priority.get(position) == 2) {
+            taskTitle.setTextColor(Color.BLACK);
         }
         if (MainActivity.priority.get(position) == 3){
             taskTitle.setTextColor(Color.RED);
         }
-        if (MainActivity.priority.get(position) == 2) {
-            taskTitle.setTextColor(Color.BLACK);
+        if (MainActivity.priority.get(position) == -1){
+            taskTitle.setTextColor(Color.WHITE);
+            //View taskParent = (View) taskTitle.getParent();
+            //taskParent.setBackgroundColor(Color.BLACK);
         }
         return v;
     }
