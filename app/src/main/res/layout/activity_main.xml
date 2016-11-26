@@ -7,8 +7,8 @@
 
     tools:context="com.cs321.todolist.MainActivity">
 
-    <ListView
-  	android:id="@+id/list_todo"
-  	android:layout_width= "wrap_content"
-  	android:layout_height="wrap_content" />
+	<ListView
+      android:id="@+id/list_todo"
+      android:layout_width= "wrap_content"
+      android:layout_height="wrap_content" />
 </RelativeLayout>

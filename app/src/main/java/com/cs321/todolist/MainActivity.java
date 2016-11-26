@@ -2,6 +2,8 @@ package com.cs321.todolist;
 
 import com.cs321.todolist.db.TaskContract;
 import com.cs321.todolist.db.TaskDbHelper;
+import com.daimajia.swipe.SwipeLayout;
+
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -28,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
 		setContentView(R.layout.activity_main);
 		mHelper = new TaskDbHelper(this);
 		mTaskListView = (ListView) findViewById(R.id.list_todo);
+
 
 		updateUI();
 	}
@@ -134,7 +137,7 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	public void deleteTask(View view) {
-		View parent = (View) view.getParent();
+		View parent = (View) view.getParent().getParent();
 		TextView taskTextView = (TextView) parent.findViewById(R.id.task_title);
 		String task = String.valueOf(taskTextView.getText());
 		SQLiteDatabase db = mHelper.getWritableDatabase();

@@ -7,7 +7,7 @@ import android.provider.BaseColumns;
 
 public class TaskContract {
     public static final String DB_NAME = "com.cs321.todolist.db";
-    public static final int DB_VERSION = 2;
+    public static final int DB_VERSION = 3;
 
     public class TaskEntry implements BaseColumns {
         public static final String TABLE = "tasks";
