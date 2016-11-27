@@ -2,10 +2,14 @@ package com.cs321.todolist;
 
 import com.cs321.todolist.db.TaskContract;
 import com.cs321.todolist.db.TaskDbHelper;
-import com.daimajia.swipe.SwipeLayout;
 
+import android.app.NotificationManager;
+import android.content.Context;
+import android.content.Intent;
+import android.support.v4.app.NotificationBuilderWithBuilderAccessor;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 import android.view.*;
 import android.widget.*;
@@ -18,11 +22,13 @@ import android.database.Cursor;
 
 
 public class MainActivity extends AppCompatActivity {
-	 private static final String TAG = "MainActivity";
-	 private TaskDbHelper mHelper;
-	 private ListView mTaskListView;
-	 private MyArrayAdapter mAdapter;
-	 public static ArrayList<Integer> priority;
+	public final static String intentExtra = "com.cs321.todolist.info";
+
+	private static final String TAG = "MainActivity";
+	private TaskDbHelper mHelper;
+	private ListView mTaskListView;
+	private MyArrayAdapter mAdapter;
+	public static ArrayList<Integer> priority;
 
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,10 +36,40 @@ public class MainActivity extends AppCompatActivity {
 		setContentView(R.layout.activity_main);
 		mHelper = new TaskDbHelper(this);
 		mTaskListView = (ListView) findViewById(R.id.list_todo);
-
-
 		updateUI();
 	}
+
+	public void setReminder(String priority, String text){
+		final String p = priority;
+		final String t = text;
+		AlertDialog dialog = new AlertDialog.Builder(this).setTitle("Would you like to add a reminder?:")
+				.setPositiveButton("Yes", new DialogInterface.OnClickListener(){
+					@Override
+					public void onClick(DialogInterface dialog, int which){
+						Intent openDateTime = new Intent(MainActivity.this, ReminderActivity.class);
+						openDateTime.putExtra(intentExtra, new String[]{p, t});
+						startActivity(openDateTime);
+						//createNotification(p, t);
+					}
+				})
+				.setNegativeButton("No", null)
+				.create();
+		dialog.show();
+	}
+
+	/*public void createNotification(String priority, String text){
+
+		NotificationCompat.Builder nBuilder = (android.support.v7.app.NotificationCompat.Builder)
+				new NotificationCompat.Builder(this)
+				.setContentTitle("Complete" + priority + "priority task!")
+				.setContentText(text)
+				.setTicker("Reminder: Item requires attention!")
+				.setSmallIcon(R.drawable.alert);
+
+		notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		notificationManager.notify(nID, nBuilder.build());
+		isNActive = true;
+	}*/
 
 	//edit created items. Has bugs in database stuff
 	//need to add method for updating priority
@@ -43,10 +79,10 @@ public class MainActivity extends AppCompatActivity {
 		final String task = String.valueOf(taskTextView.getText());
 		final EditText taskEditText = new EditText(this);
 		taskEditText.setText(task, TextView.BufferType.EDITABLE);
-		final CharSequence[] items = {" High "," Medium "," Low "};
+		final CharSequence[] items = {" High "," Medium "," Low "," None "}; // Added the ability to have no priority.
 
 		//create a alert dialog for user to change info of this clicked task
-		AlertDialog dialog = new AlertDialog.Builder(this).setTitle("Edit task")
+		AlertDialog dialog = new AlertDialog.Builder(this).setTitle("Edit task:")
 				.setView(taskEditText)
 				//Let user choose priority for this task
 				.setSingleChoiceItems(items, 0, null)
@@ -62,8 +98,11 @@ public class MainActivity extends AppCompatActivity {
 							priorityNum = 3;
 						else if (checkedPriority.equals(" Medium "))
 							priorityNum = 2;
-						else
+						else if (checkedPriority.equals(" Low "))
 							priorityNum = 1;
+						// 0 was added for None
+						else
+							priorityNum = 0;
 						//get a database to update new data of this task
 						SQLiteDatabase db = mHelper.getWritableDatabase();
 						ContentValues values = new ContentValues();
@@ -93,9 +132,9 @@ public class MainActivity extends AppCompatActivity {
     		switch (item.getItemId()) {
         		case R.id.action_add_task:
 					final EditText taskEditText = new EditText(this);
-					final CharSequence[] items = {" High "," Medium "," Low "};
+					final CharSequence[] items = {" High "," Medium "," Low ", " None "}; // Added None priority
 
-					AlertDialog dialog = new AlertDialog.Builder(this).setTitle("Add a new task")
+					AlertDialog dialog = new AlertDialog.Builder(this).setTitle("Add a new task:")
 					.setView(taskEditText)
 					//Let user choose priority for this task
 					.setSingleChoiceItems(items, 0, null)
@@ -103,6 +142,7 @@ public class MainActivity extends AppCompatActivity {
 				    	@Override
 					 	public void onClick(DialogInterface dialog, int which) {
 							String task = String.valueOf(taskEditText.getText());
+							if (task.equals("")) return; // Ensures that you cannot create an empty task.
 							ListView lw = ((AlertDialog)dialog).getListView();
 							String checkedPriority = lw.getAdapter().getItem(lw.getCheckedItemPosition()).toString();
 							int priorityNum;
@@ -111,8 +151,11 @@ public class MainActivity extends AppCompatActivity {
 								priorityNum = 3;
 							else if (checkedPriority.equals(" Medium "))
 								priorityNum = 2;
-							else
+							else if (checkedPriority.equals(" Low "))
 								priorityNum = 1;
+							// 0 for None
+							else
+								priorityNum = 0;
 					   		SQLiteDatabase db = mHelper.getWritableDatabase();
 					   		ContentValues values = new ContentValues();
 							values.put(TaskContract.TaskEntry.COL_TASK_TITLE, task);
@@ -123,6 +166,8 @@ public class MainActivity extends AppCompatActivity {
 						   	SQLiteDatabase.CONFLICT_REPLACE);
 							db.close();
 							updateUI();
+							setReminder(checkedPriority.toLowerCase(), task);
+							//createNotification(checkedPriority.toLowerCase(), task);
 						}
 				    })
 		 			.setNegativeButton("Cancel", null)
@@ -137,7 +182,7 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	public void deleteTask(View view) {
-		View parent = (View) view.getParent().getParent();
+		View parent = (View) view.getParent();
 		TextView taskTextView = (TextView) parent.findViewById(R.id.task_title);
 		String task = String.valueOf(taskTextView.getText());
 		SQLiteDatabase db = mHelper.getWritableDatabase();
@@ -145,20 +190,6 @@ public class MainActivity extends AppCompatActivity {
 				TaskContract.TaskEntry.COL_TASK_TITLE + " = ?",
 				new String[]{task});
 		db.close();
-		updateUI();
-	}
-
-	public void finishTask(View view){
-		View parent = (View) view.getParent().getParent();
-		TextView taskTextView = (TextView) parent.findViewById(R.id.task_title);
-		String task = String.valueOf(taskTextView.getText());
-		SQLiteDatabase db = mHelper.getWritableDatabase();
-		ContentValues values = new ContentValues();
-		values.put(TaskContract.TaskEntry.COL_TASK_TITLE, task);
-		values.put(TaskContract.TaskEntry.COL_TASK_PRIORITY, -1);
-		db.update(TaskContract.TaskEntry.TABLE, values, TaskContract.TaskEntry.COL_TASK_TITLE + "='" + task + "'", null);
-		db.close();
-
 		updateUI();
 	}
 
