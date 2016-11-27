@@ -182,7 +182,7 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	public void deleteTask(View view) {
-		View parent = (View) view.getParent();
+		View parent = (View) view.getParent().getParent();
 		TextView taskTextView = (TextView) parent.findViewById(R.id.task_title);
 		String task = String.valueOf(taskTextView.getText());
 		SQLiteDatabase db = mHelper.getWritableDatabase();
@@ -190,6 +190,20 @@ public class MainActivity extends AppCompatActivity {
 				TaskContract.TaskEntry.COL_TASK_TITLE + " = ?",
 				new String[]{task});
 		db.close();
+		updateUI();
+	}
+	
+		public void finishTask(View view){
+		View parent = (View) view.getParent().getParent();
+		TextView taskTextView = (TextView) parent.findViewById(R.id.task_title);
+		String task = String.valueOf(taskTextView.getText());
+		SQLiteDatabase db = mHelper.getWritableDatabase();
+		ContentValues values = new ContentValues();
+		values.put(TaskContract.TaskEntry.COL_TASK_TITLE, task);
+		values.put(TaskContract.TaskEntry.COL_TASK_PRIORITY, -1);
+		db.update(TaskContract.TaskEntry.TABLE, values, TaskContract.TaskEntry.COL_TASK_TITLE + "='" + task + "'", null);
+		db.close();
+
 		updateUI();
 	}
 
