@@ -7,34 +7,52 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
+
+import com.daimajia.swipe.SwipeLayout;
+import com.daimajia.swipe.adapters.ArraySwipeAdapter;
+
 import java.util.ArrayList;
 
 /**
  * Created by Administrator on 11/22/2016.
  */
 
-public class MyArrayAdapter extends ArrayAdapter<String> {
+public class MyArrayAdapter extends ArraySwipeAdapter<String> {
     public MyArrayAdapter(Context context, int resource, int textViewResourceId, ArrayList<String> objects){
         super(context, resource, textViewResourceId, objects);
     }
 
     @Override
+    public int getSwipeLayoutResourceId(int position){
+        return R.id.swipe;
+    }
+
+    @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         //get the current view
-        RelativeLayout v = (RelativeLayout)super.getView(position, convertView, parent);
+        SwipeLayout v = (SwipeLayout) super.getView(position, convertView, parent);
         //Log.v("Content", ((TextView)v.findViewById(R.id.task_title)).getText().toString());
         //Log.v("priority is", MainActivity.priority.get(position).toString());
-        
+
         //set background for this view according to priority
+        TextView taskTitle = (TextView) v.findViewById(R.id.task_title);
+
         if (MainActivity.priority.get(position) == 1){
-            v.setBackgroundColor(Color.GREEN);}
-        else if (MainActivity.priority.get(position) == 3){
-            v.setBackgroundColor(Color.RED);}
-        else if (MainActivity.priority.get(position) == 2){
-            v.setBackgroundColor(Color.YELLOW);}
-        // The background is transparent if there is no priority.
-        else if (MainActivity.priority.get(position) == 0){
-            v.setBackgroundColor(Color.TRANSPARENT);}
+            taskTitle.setTextColor(Color.BLUE);
+            View taskParent = (View) taskTitle.getParent();
+            //taskParent.setBackgroundColor();
+        }
+         if (MainActivity.priority.get(position) == 2) {
+            taskTitle.setTextColor(Color.BLACK);
+        }
+        if (MainActivity.priority.get(position) == 3){
+            taskTitle.setTextColor(Color.RED);
+        }
+        if (MainActivity.priority.get(position) == -1){
+            taskTitle.setTextColor(Color.WHITE);
+            //View taskParent = (View) taskTitle.getParent();
+            //taskParent.setBackgroundColor(Color.BLACK);
+        }
         return v;
     }
 }
