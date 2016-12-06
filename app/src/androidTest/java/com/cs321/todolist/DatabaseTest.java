@@ -57,12 +57,12 @@ public class DatabaseTest {
         myDatabase.close();
     }
 
-    @Test
+    @Test  //can we create new database?
     public void testPreConditions() {
         assertNotNull(myDatabase);
     }
 
-    @Test
+    @Test   //can we add new task?
     public void addTasks(){
         String s = "Landry";
         int priority = 1;
