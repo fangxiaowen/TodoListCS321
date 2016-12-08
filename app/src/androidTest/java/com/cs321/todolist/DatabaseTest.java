@@ -195,4 +195,75 @@ public class DatabaseTest {
         assertEquals(0, priority6);
     }
 
+    @Test   //Can user create empty task?
+    public void emptyTask() {
+        ContentValues values = new ContentValues();
+        values.put(TaskContract.TaskEntry.COL_TASK_TITLE, "");
+        values.put(TaskContract.TaskEntry.COL_TASK_PRIORITY, 0);
+        myDatabase.insertWithOnConflict(TaskContract.TaskEntry.TABLE,
+                null,
+                values,
+                SQLiteDatabase.CONFLICT_REPLACE);
+
+
+        ArrayList<String> taskList = new ArrayList<>();
+        ArrayList<Integer> priorityList = new ArrayList<>();
+        Cursor cursor = myDatabase.query(TaskContract.TaskEntry.TABLE,
+                new String[]{TaskContract.TaskEntry._ID, TaskContract.TaskEntry.COL_TASK_TITLE, TaskContract.TaskEntry.COL_TASK_PRIORITY},
+                null, null, null, null, TaskContract.TaskEntry.COL_TASK_PRIORITY);
+        //get the task title and task priority and store them in taskList and priorityList
+        while (cursor.moveToNext()) {
+            int idx1 = cursor.getColumnIndex(TaskContract.TaskEntry.COL_TASK_TITLE);
+            int idx2 = cursor.getColumnIndex(TaskContract.TaskEntry.COL_TASK_PRIORITY);
+            taskList.add(cursor.getString(idx1));
+            priorityList.add(cursor.getInt(idx2));
+        }
+
+        String s2 = taskList.get(0);
+        assertEquals(s2, "");
+        int priority2 = priorityList.get(0);
+        assertTrue(priority2 == 0);
+    }
+
+    @Test   //can user create tasks with same name?
+    public void sameTasks(){
+        ContentValues values = new ContentValues();
+        values.put(TaskContract.TaskEntry.COL_TASK_TITLE, "Buy gift");
+        values.put(TaskContract.TaskEntry.COL_TASK_PRIORITY, 1);
+        myDatabase.insertWithOnConflict(TaskContract.TaskEntry.TABLE,
+                null,
+                values,
+                SQLiteDatabase.CONFLICT_REPLACE);
+
+        values.put(TaskContract.TaskEntry.COL_TASK_TITLE, "Buy gift");
+        values.put(TaskContract.TaskEntry.COL_TASK_PRIORITY, 3);
+        myDatabase.insertWithOnConflict(TaskContract.TaskEntry.TABLE,
+                null,
+                values,
+                SQLiteDatabase.CONFLICT_REPLACE);
+
+
+        myDatabase.delete(TaskContract.TaskEntry.TABLE,
+                TaskContract.TaskEntry.COL_TASK_TITLE + " = ?",
+                new String[]{"Buy gift"});
+
+        ArrayList<String> taskList = new ArrayList<>();
+        ArrayList<Integer> priorityList = new ArrayList<>();
+        Cursor cursor = myDatabase.query(TaskContract.TaskEntry.TABLE,
+                new String[]{TaskContract.TaskEntry._ID, TaskContract.TaskEntry.COL_TASK_TITLE, TaskContract.TaskEntry.COL_TASK_PRIORITY},
+                null, null, null, null, TaskContract.TaskEntry.COL_TASK_PRIORITY);
+        //get the task title and task priority and store them in taskList and priorityList
+        while (cursor.moveToNext()) {
+            int idx1 = cursor.getColumnIndex(TaskContract.TaskEntry.COL_TASK_TITLE);
+            int idx2 = cursor.getColumnIndex(TaskContract.TaskEntry.COL_TASK_PRIORITY);
+            taskList.add(cursor.getString(idx1));
+            priorityList.add(cursor.getInt(idx2));
+        }
+
+        String s2 = taskList.get(0);
+        assertEquals(s2, "Buy gift");
+
+
+    }
+
 }
